@@ -3,13 +3,14 @@
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <string>
+#include "DAC.hpp"
 
 /** randomly generated UUID */
 static constexpr auto SERVICE_UUID = "83336cef-8fbc-4b77-857b-0aebec87160c";
 static constexpr auto RAW_CHARA_UUID = "83336cef-8fbc-4b77-857b-0aebec87160d";
 static constexpr auto VOLT_CHARA_UUID = "83336cef-8fbc-4b77-857b-0aebec87160e";
 
-static uint8_t g_dac_value = 0;
+static DAC dac(0);
 
 class MyCharacteristicCallback : public BLECharacteristicCallbacks
 {
@@ -21,13 +22,14 @@ class MyCharacteristicCallback : public BLECharacteristicCallbacks
             return;
         }
 
-        g_dac_value = atoi(value.c_str());
-        dac_output_voltage(DAC_CHANNEL_1, g_dac_value);
+        dac.from(value);
+
+        dac_output_voltage(DAC_CHANNEL_1, dac.getData());
     }
 
     void onRead(BLECharacteristic *chara)
     {
-        std::string value = std::to_string(g_dac_value);
+        std::string value = dac.toString();
         chara->setValue(value);
     }
 };
@@ -36,8 +38,7 @@ class VoltCharaCallback : public BLECharacteristicCallbacks
 {
     void onRead(BLECharacteristic *chara)
     {
-        auto mv = (g_dac_value * 3300) / 255;
-        std::string value = std::to_string(mv);
+        std::string value = dac.asMillivoltString();
 
         chara->setValue(value);
     }
@@ -79,7 +80,7 @@ void setup()
     BLEDevice::startAdvertising();
 
     dac_output_enable(DAC_CHANNEL_1);
-    dac_output_voltage(DAC_CHANNEL_1, g_dac_value);
+    dac_output_voltage(DAC_CHANNEL_1, dac.getData());
 }
 
 void loop()
