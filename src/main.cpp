@@ -29,8 +29,7 @@ class MyCharacteristicCallback : public BLECharacteristicCallbacks
 
     void onRead(BLECharacteristic *chara)
     {
-        std::string value = dac.toString();
-        chara->setValue(value);
+        chara->setValue(dac.toString());
     }
 };
 
@@ -38,9 +37,7 @@ class VoltCharaCallback : public BLECharacteristicCallbacks
 {
     void onRead(BLECharacteristic *chara)
     {
-        std::string value = dac.asMillivoltString();
-
-        chara->setValue(value);
+        chara->setValue(dac.asMillivoltString());
     }
 };
 
